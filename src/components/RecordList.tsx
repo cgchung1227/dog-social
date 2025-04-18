@@ -2,52 +2,72 @@ import React, { useState } from 'react';
 import {
   List,
   ListItem,
-  ListItemText,
+  ListItemButton,
+  ListItemIcon,
   IconButton,
   Paper,
   Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
+  MenuItem,
   Typography,
   Stack,
-  Chip,
   Box,
 } from '@mui/material';
-import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import {
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  Pets as PetsIcon,
+} from '@mui/icons-material';
 import { format } from 'date-fns';
 import { SocialRecord } from '../types';
-import { RecordForm } from './RecordForm';
 
 interface RecordListProps {
   records: SocialRecord[];
-  onUpdate: (id: string, record: Omit<SocialRecord, 'id'>) => void;
+  onUpdate: (id: string, updatedRecord: SocialRecord) => void;
   onDelete: (id: string) => void;
 }
 
-const getGenderLabel = (gender: SocialRecord['gender']) => {
-  return gender === 'male' ? '公' : '母';
-};
-
-const getNeuteredLabel = (neutered: SocialRecord['neutered']) => {
-  switch (neutered) {
-    case 'yes':
-      return '已結紮';
-    case 'no':
-      return '未結紮';
+const getInteractionTypeLabel = (type: string) => {
+  switch (type) {
+    case 'play':
+      return '玩耍';
+    case 'walk':
+      return '散步';
+    case 'training':
+      return '訓練';
     default:
-      return '不確定';
+      return type;
   }
 };
 
-export const RecordList: React.FC<RecordListProps> = ({ records, onUpdate, onDelete }) => {
-  const [editingRecord, setEditingRecord] = useState<SocialRecord | null>(null);
+const getDurationLabel = (duration: number) => {
+  return `${duration} 分鐘`;
+};
 
-  const handleEdit = (record: SocialRecord) => {
+export const RecordList = ({ records, onUpdate, onDelete }: RecordListProps) => {
+  const [editingRecord, setEditingRecord] = useState<SocialRecord | null>(null);
+  const [editFormData, setEditFormData] = useState<SocialRecord | null>(null);
+
+  const handleEditClick = (record: SocialRecord) => {
     setEditingRecord(record);
+    setEditFormData({ ...record });
   };
 
-  const handleUpdate = (data: Omit<SocialRecord, 'id'>) => {
-    if (editingRecord) {
-      onUpdate(editingRecord.id, data);
+  const handleEditSubmit = () => {
+    if (editFormData && editingRecord) {
+      onUpdate(editingRecord.id, editFormData);
       setEditingRecord(null);
+      setEditFormData(null);
+    }
+  };
+
+  const handleDeleteClick = (id: string) => {
+    if (window.confirm('確定要刪除這筆記錄嗎？')) {
+      onDelete(id);
     }
   };
 
@@ -59,86 +79,111 @@ export const RecordList: React.FC<RecordListProps> = ({ records, onUpdate, onDel
             <ListItem
               key={record.id}
               secondaryAction={
-                <Stack direction="row" spacing={0.5}>
-                  <IconButton edge="end" onClick={() => handleEdit(record)} size="small">
-                    <EditIcon fontSize="small" />
+                <Box>
+                  <IconButton edge="end" onClick={() => handleEditClick(record)}>
+                    <EditIcon />
                   </IconButton>
-                  <IconButton edge="end" onClick={() => onDelete(record.id)} size="small">
-                    <DeleteIcon fontSize="small" />
+                  <IconButton edge="end" onClick={() => handleDeleteClick(record.id)}>
+                    <DeleteIcon />
                   </IconButton>
-                </Stack>
+                </Box>
               }
-              sx={{
-                flexDirection: 'column',
-                alignItems: 'flex-start',
-                py: 2,
-              }}
+              disablePadding
             >
-              <Box sx={{ width: '100%', mb: 1 }}>
-                <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                    {record.target}
+              <ListItemButton>
+                <ListItemIcon>
+                  <PetsIcon />
+                </ListItemIcon>
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="subtitle1">
+                    {record.dogName} 與 {record.otherDogName}
                   </Typography>
-                  <Chip
-                    size="small"
-                    label={getGenderLabel(record.gender)}
-                    color={record.gender === 'male' ? 'primary' : 'secondary'}
-                  />
-                  <Chip
-                    size="small"
-                    label={getNeuteredLabel(record.neutered)}
-                    variant="outlined"
-                  />
-                  {record.worthMeetingAgain && (
-                    <Chip
-                      size="small"
-                      label="值得再見"
-                      color="success"
-                    />
+                  <Typography variant="body2" color="text.secondary">
+                    {format(new Date(record.date), 'yyyy-MM-dd')} - {record.location}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    互動類型: {getInteractionTypeLabel(record.interactionType)}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    持續時間: {getDurationLabel(record.duration)}
+                  </Typography>
+                  {record.notes && (
+                    <Typography variant="body2" color="text.secondary">
+                      備註: {record.notes}
+                    </Typography>
                   )}
-                </Stack>
-              </Box>
-
-              <Stack spacing={0.5} sx={{ width: '100%' }}>
-                <Typography variant="body2" color="text.secondary">
-                  {format(new Date(record.date), 'yyyy/MM/dd')}
-                </Typography>
-                {record.age && (
-                  <Typography variant="body2" color="text.secondary">
-                    年齡：{record.age}
-                  </Typography>
-                )}
-                <Typography variant="body2" color="text.secondary">
-                  初始互動：{record.initialInteraction}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  互動結果：{record.interactionResult}
-                </Typography>
-                {record.notes && (
-                  <Typography variant="body2" color="text.secondary">
-                    備註：{record.notes}
-                  </Typography>
-                )}
-              </Stack>
+                </Box>
+              </ListItemButton>
             </ListItem>
           ))}
         </List>
       </Paper>
 
-      <Dialog
-        open={!!editingRecord}
-        onClose={() => setEditingRecord(null)}
-        maxWidth="sm"
-        fullWidth
-        fullScreen
-      >
-        {editingRecord && (
-          <RecordForm
-            initialData={editingRecord}
-            onSubmit={handleUpdate}
-            onCancel={() => setEditingRecord(null)}
-          />
-        )}
+      <Dialog open={!!editingRecord} onClose={() => setEditingRecord(null)}>
+        <DialogTitle>編輯記錄</DialogTitle>
+        <DialogContent>
+          {editFormData && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
+              <TextField
+                label="日期"
+                type="date"
+                value={editFormData.date.toISOString().split('T')[0]}
+                onChange={(e) => setEditFormData({ ...editFormData, date: new Date(e.target.value) })}
+                InputLabelProps={{ shrink: true }}
+                fullWidth
+              />
+              <TextField
+                label="狗狗名字"
+                value={editFormData.dogName}
+                onChange={(e) => setEditFormData({ ...editFormData, dogName: e.target.value })}
+                fullWidth
+              />
+              <TextField
+                label="對方狗狗名字"
+                value={editFormData.otherDogName}
+                onChange={(e) => setEditFormData({ ...editFormData, otherDogName: e.target.value })}
+                fullWidth
+              />
+              <TextField
+                label="地點"
+                value={editFormData.location}
+                onChange={(e) => setEditFormData({ ...editFormData, location: e.target.value })}
+                fullWidth
+              />
+              <TextField
+                label="互動類型"
+                select
+                value={editFormData.interactionType}
+                onChange={(e) => setEditFormData({ ...editFormData, interactionType: e.target.value })}
+                fullWidth
+              >
+                <MenuItem value="play">玩耍</MenuItem>
+                <MenuItem value="walk">散步</MenuItem>
+                <MenuItem value="training">訓練</MenuItem>
+              </TextField>
+              <TextField
+                label="持續時間（分鐘）"
+                type="number"
+                value={editFormData.duration}
+                onChange={(e) => setEditFormData({ ...editFormData, duration: Number(e.target.value) })}
+                fullWidth
+                inputProps={{ min: 1 }}
+              />
+              <TextField
+                label="備註"
+                multiline
+                rows={4}
+                value={editFormData.notes}
+                onChange={(e) => setEditFormData({ ...editFormData, notes: e.target.value })}
+                fullWidth
+              />
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditingRecord(null)}>取消</Button>
+          <Button onClick={handleEditSubmit} variant="contained">儲存</Button>
+        </DialogActions>
       </Dialog>
     </>
   );
