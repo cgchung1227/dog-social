@@ -1,10 +1,15 @@
 export interface SocialRecord {
   id: string;
   date: Date;
-  dogName: string;
   otherDogName: string;
+  otherDogGender: 'male' | 'female';
+  otherDogAge: string;
   location: string;
   interactionType: string;
   duration: number;
+  result: string;
+  meetAgain: boolean;
+  moodBefore?: string;
+  moodAfter?: string;
   notes?: string;
 } 

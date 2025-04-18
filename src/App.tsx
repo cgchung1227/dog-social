@@ -46,7 +46,7 @@ const MainContent = () => {
       <Stack spacing={2}>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="h5" component="h1">
-            🐕 狗狗社交日記
+            🐕 斗宅社交日記
           </Typography>
           <Button variant="outlined" onClick={exportData} size="small">
             匯出

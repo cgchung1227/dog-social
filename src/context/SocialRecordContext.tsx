@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { SocialRecord } from '../types';
+import { initialRecords } from '../data/initialRecords';
 
 interface SocialRecordContextType {
   records: SocialRecord[];
@@ -14,7 +15,14 @@ const SocialRecordContext = createContext<SocialRecordContextType | undefined>(u
 export const SocialRecordProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [records, setRecords] = useState<SocialRecord[]>(() => {
     const savedRecords = localStorage.getItem('dogSocialRecords');
-    return savedRecords ? JSON.parse(savedRecords) : [];
+    if (savedRecords) {
+      return JSON.parse(savedRecords);
+    }
+    // 如果沒有儲存的記錄，使用初始資料
+    return initialRecords.map(record => ({
+      ...record,
+      id: crypto.randomUUID(),
+    }));
   });
 
   useEffect(() => {
