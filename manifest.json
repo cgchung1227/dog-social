@@ -1,0 +1,21 @@
+{
+  "name": "狗狗社交日記",
+  "short_name": "狗狗日記",
+  "description": "記錄你的狗狗與其他狗狗的社交互動",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1976d2",
+  "icons": [
+    {
+      "src": "/dog-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/dog-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+} 
